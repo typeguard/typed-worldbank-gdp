@@ -1,4 +1,4 @@
-# Typed Worldbank GDP
+# Worldbank GDP – Typed JSON API
 
 > Worldbank GDP data
 
