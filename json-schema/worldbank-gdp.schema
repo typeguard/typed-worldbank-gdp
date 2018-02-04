@@ -1,0 +1,114 @@
+{
+    "type": "array",
+    "items": {
+        "oneOf": [
+            {
+                "type": "array",
+                "items": {
+                    "$ref": "#/definitions/PurpleGDP"
+                }
+            },
+            {
+                "$ref": "#/definitions/FluffyGDP"
+            }
+        ],
+        "title": "GDP"
+    },
+    "definitions": {
+        "Country": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "id": {
+                    "type": "string",
+                    "enum": [
+                        "CN",
+                        "US",
+                        "NY.GDP.MKTP.CD"
+                    ],
+                    "title": "id"
+                },
+                "value": {
+                    "type": "string",
+                    "enum": [
+                        "China",
+                        "United States",
+                        "GDP (current US$)"
+                    ],
+                    "title": "value"
+                }
+            },
+            "required": [
+                "id",
+                "value"
+            ],
+            "title": "country"
+        },
+        "PurpleGDP": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "indicator": {
+                    "$ref": "#/definitions/Country"
+                },
+                "country": {
+                    "$ref": "#/definitions/Country"
+                },
+                "value": {
+                    "oneOf": [
+                        {
+                            "type": "null"
+                        },
+                        {
+                            "type": "string"
+                        }
+                    ],
+                    "title": "value"
+                },
+                "decimal": {
+                    "type": "string",
+                    "enum": [
+                        "0"
+                    ],
+                    "title": "decimal"
+                },
+                "date": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "country",
+                "date",
+                "decimal",
+                "indicator",
+                "value"
+            ],
+            "title": "GDP"
+        },
+        "FluffyGDP": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "page": {
+                    "type": "integer"
+                },
+                "pages": {
+                    "type": "integer"
+                },
+                "per_page": {
+                    "type": "string"
+                },
+                "total": {
+                    "type": "integer"
+                }
+            },
+            "required": [
+                "page",
+                "pages",
+                "per_page",
+                "total"
+            ],
+            "title": "GDP"
+        }
+    }
+}

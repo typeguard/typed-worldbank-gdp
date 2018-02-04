@@ -1,0 +1,30 @@
+class Gdp1 {
+    indicator: Country
+    country: Country
+    value: Maybe<String>
+    decimal: Decimal
+    date: String
+}
+
+class Country {
+    id: ID
+    value: Value
+}
+
+class Gdp2 {
+    page: Int
+    pages: Int
+    perPage: String
+    total: Int
+}
+
+enum ID = CN | NyGdpMktpCD | Us
+
+enum Value = China | GDPCurrentUS | UnitedStates
+
+enum Decimal = The0
+
+union Gdp {
+    case Gdp2
+    case List<Gdp1>
+}
