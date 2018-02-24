@@ -8,9 +8,9 @@ public class Country {
     private Value value;
 
     @JsonProperty("id")
-    public ID getId() { return id; }
+    public ID getID() { return id; }
     @JsonProperty("id")
-    public void setId(ID value) { this.id = value; }
+    public void setID(ID value) { this.id = value; }
 
     @JsonProperty("value")
     public Value getValue() { return value; }

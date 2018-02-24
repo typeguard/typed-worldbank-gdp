@@ -1,7 +1,7 @@
 // To parse and unparse this JSON data, add this code to your project and do:
 //
-//    r, err := UnmarshalGdp(bytes)
-//    bytes, err = r.Marshal()
+//    gdp, err := UnmarshalGdp(bytes)
+//    bytes, err = gdp.Marshal()
 
 package main
 
@@ -23,22 +23,22 @@ func (r *Gdp) Marshal() ([]byte, error) {
 
 type PurpleGDP struct {
 	Indicator Country `json:"indicator"`
-	Country   Country `json:"country"`
-	Value     *string `json:"value"`
-	Decimal   Decimal `json:"decimal"`
-	Date      string  `json:"date"`
+	Country   Country `json:"country"`  
+	Value     *string `json:"value"`    
+	Decimal   Decimal `json:"decimal"`  
+	Date      string  `json:"date"`     
 }
 
 type Country struct {
-	ID    ID    `json:"id"`
+	ID    ID    `json:"id"`   
 	Value Value `json:"value"`
 }
 
 type FluffyGDP struct {
-	Page    int64  `json:"page"`
-	Pages   int64  `json:"pages"`
+	Page    int64  `json:"page"`    
+	Pages   int64  `json:"pages"`   
 	PerPage string `json:"per_page"`
-	Total   int64  `json:"total"`
+	Total   int64  `json:"total"`   
 }
 
 type ID string

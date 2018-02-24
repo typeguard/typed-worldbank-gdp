@@ -2,17 +2,19 @@
 //
 //    using QuickType;
 //
-//    var data = Gdp.FromJson(jsonString);
+//    var gdp = Gdp.FromJson(jsonString);
 
 namespace QuickType
 {
     using System;
-    using System.Net;
     using System.Collections.Generic;
+    using System.Net;
 
+    using System.Globalization;
     using Newtonsoft.Json;
+    using Newtonsoft.Json.Converters;
 
-    public partial class PurpleGdp
+    public partial class GdpElement
     {
         [JsonProperty("indicator")]
         public Country Indicator { get; set; }
@@ -39,7 +41,7 @@ namespace QuickType
         public Value Value { get; set; }
     }
 
-    public partial class FluffyGdp
+    public partial class PurpleGdp
     {
         [JsonProperty("page")]
         public long Page { get; set; }
@@ -62,13 +64,13 @@ namespace QuickType
 
     public partial struct Gdp
     {
-        public FluffyGdp FluffyGdp;
-        public PurpleGdp[] PurpleGdpArray;
+        public GdpElement[] GdpElementArray;
+        public PurpleGdp PurpleGdp;
     }
 
     public partial struct Gdp
     {
-        public static Gdp[] FromJson(string json) => JsonConvert.DeserializeObject<Gdp[]>(json, Converter.Settings);
+        public static Gdp[] FromJson(string json) => JsonConvert.DeserializeObject<Gdp[]>(json, QuickType.Converter.Settings);
     }
 
     static class IdExtensions
@@ -167,16 +169,16 @@ namespace QuickType
     {
         public Gdp(JsonReader reader, JsonSerializer serializer)
         {
-            FluffyGdp = null;
-            PurpleGdpArray = null;
+            GdpElementArray = null;
+            PurpleGdp = null;
 
             switch (reader.TokenType)
             {
                 case JsonToken.StartArray:
-                    PurpleGdpArray = serializer.Deserialize<PurpleGdp[]>(reader);
+                    GdpElementArray = serializer.Deserialize<GdpElement[]>(reader);
                     return;
                 case JsonToken.StartObject:
-                    FluffyGdp = serializer.Deserialize<FluffyGdp>(reader);
+                    PurpleGdp = serializer.Deserialize<PurpleGdp>(reader);
                     return;
             }
             throw new Exception("Cannot convert Gdp");
@@ -184,14 +186,14 @@ namespace QuickType
 
         public void WriteJson(JsonWriter writer, JsonSerializer serializer)
         {
-            if (FluffyGdp != null)
+            if (GdpElementArray != null)
             {
-                serializer.Serialize(writer, FluffyGdp);
+                serializer.Serialize(writer, GdpElementArray);
                 return;
             }
-            if (PurpleGdpArray != null)
+            if (PurpleGdp != null)
             {
-                serializer.Serialize(writer, PurpleGdpArray);
+                serializer.Serialize(writer, PurpleGdp);
                 return;
             }
             throw new Exception("Union must not be null");
@@ -200,10 +202,10 @@ namespace QuickType
 
     public static class Serialize
     {
-        public static string ToJson(this Gdp[] self) => JsonConvert.SerializeObject(self, Converter.Settings);
+        public static string ToJson(this Gdp[] self) => JsonConvert.SerializeObject(self, QuickType.Converter.Settings);
     }
 
-    public class Converter: JsonConverter
+    internal class Converter: JsonConverter
     {
         public override bool CanConvert(Type t) => t == typeof(Id) || t == typeof(Value) || t == typeof(Decimal) || t == typeof(Gdp) || t == typeof(Id?) || t == typeof(Value?) || t == typeof(Decimal?);
 
@@ -265,7 +267,13 @@ namespace QuickType
         {
             MetadataPropertyHandling = MetadataPropertyHandling.Ignore,
             DateParseHandling = DateParseHandling.None,
-            Converters = { new Converter() },
+            Converters = { 
+                new Converter(),
+                new IsoDateTimeConverter()
+                {
+                    DateTimeStyles = DateTimeStyles.AssumeUniversal,
+                },
+            },
         };
     }
 }

@@ -1,4 +1,4 @@
-class Gdp1 {
+class GDPElement {
     indicator: Country
     country: Country
     value: Maybe<String>
@@ -11,7 +11,7 @@ class Country {
     value: Value
 }
 
-class Gdp2 {
+class Gdp1 {
     page: Int
     pages: Int
     perPage: String
@@ -25,6 +25,6 @@ enum Value = China | GDPCurrentUS | UnitedStates
 enum Decimal = The0
 
 union Gdp {
-    case Gdp2
-    case List<Gdp1>
+    case Gdp1
+    case List<GDPElement>
 }

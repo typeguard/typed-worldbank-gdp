@@ -5,11 +5,11 @@
             {
                 "type": "array",
                 "items": {
-                    "$ref": "#/definitions/PurpleGDP"
+                    "$ref": "#/definitions/GDPElement"
                 }
             },
             {
-                "$ref": "#/definitions/FluffyGDP"
+                "$ref": "#/definitions/PurpleGDP"
             }
         ],
         "title": "GDP"
@@ -44,7 +44,7 @@
             ],
             "title": "country"
         },
-        "PurpleGDP": {
+        "GDPElement": {
             "type": "object",
             "additionalProperties": false,
             "properties": {
@@ -85,7 +85,7 @@
             ],
             "title": "GDP"
         },
-        "FluffyGDP": {
+        "PurpleGDP": {
             "type": "object",
             "additionalProperties": false,
             "properties": {

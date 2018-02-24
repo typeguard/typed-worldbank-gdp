@@ -1,9 +1,9 @@
 -- To decode the JSON data, add this file to your project, run
---
+-- 
 --     elm-package install NoRedInk/elm-decode-pipeline
---
+-- 
 -- add these imports
---
+-- 
 --     import Json.Decode exposing (decodeString)`);
 --     import QuickType exposing (gdp)
 --

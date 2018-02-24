@@ -4,34 +4,28 @@ import java.util.Map;
 import com.fasterxml.jackson.annotation.*;
 
 public class PurpleGDP {
-    private Country indicator;
-    private Country country;
-    private String value;
-    private Decimal decimal;
-    private String date;
+    private long page;
+    private long pages;
+    private String perPage;
+    private long total;
 
-    @JsonProperty("indicator")
-    public Country getIndicator() { return indicator; }
-    @JsonProperty("indicator")
-    public void setIndicator(Country value) { this.indicator = value; }
+    @JsonProperty("page")
+    public long getPage() { return page; }
+    @JsonProperty("page")
+    public void setPage(long value) { this.page = value; }
 
-    @JsonProperty("country")
-    public Country getCountry() { return country; }
-    @JsonProperty("country")
-    public void setCountry(Country value) { this.country = value; }
+    @JsonProperty("pages")
+    public long getPages() { return pages; }
+    @JsonProperty("pages")
+    public void setPages(long value) { this.pages = value; }
 
-    @JsonProperty("value")
-    public String getValue() { return value; }
-    @JsonProperty("value")
-    public void setValue(String value) { this.value = value; }
+    @JsonProperty("per_page")
+    public String getPerPage() { return perPage; }
+    @JsonProperty("per_page")
+    public void setPerPage(String value) { this.perPage = value; }
 
-    @JsonProperty("decimal")
-    public Decimal getDecimal() { return decimal; }
-    @JsonProperty("decimal")
-    public void setDecimal(Decimal value) { this.decimal = value; }
-
-    @JsonProperty("date")
-    public String getDate() { return date; }
-    @JsonProperty("date")
-    public void setDate(String value) { this.date = value; }
+    @JsonProperty("total")
+    public long getTotal() { return total; }
+    @JsonProperty("total")
+    public void setTotal(long value) { this.total = value; }
 }

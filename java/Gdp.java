@@ -9,8 +9,8 @@ import com.fasterxml.jackson.databind.annotation.*;
 @JsonDeserialize(using = Gdp.Deserializer.class)
 @JsonSerialize(using = Gdp.Serializer.class)
 public class Gdp {
-    public FluffyGDP fluffyGDPValue;
-    public PurpleGDP[] purpleGDPArrayValue;
+    public PurpleGDP purpleGDPValue;
+    public GDPElement[] gdpElementArrayValue;
 
     static class Deserializer extends JsonDeserializer<Gdp> {
         @Override
@@ -18,10 +18,10 @@ public class Gdp {
             Gdp value = new Gdp();
             switch (jsonParser.getCurrentToken()) {
             case START_ARRAY:
-                value.purpleGDPArrayValue = jsonParser.readValueAs(PurpleGDP[].class);
+                value.gdpElementArrayValue = jsonParser.readValueAs(GDPElement[].class);
                 break;
             case START_OBJECT:
-                value.fluffyGDPValue = jsonParser.readValueAs(FluffyGDP.class);
+                value.purpleGDPValue = jsonParser.readValueAs(PurpleGDP.class);
                 break;
             default: throw new IOException("Cannot deserialize Gdp");
             }
@@ -32,12 +32,12 @@ public class Gdp {
     static class Serializer extends JsonSerializer<Gdp> {
         @Override
         public void serialize(Gdp obj, JsonGenerator jsonGenerator, SerializerProvider serializerProvider) throws IOException {
-            if (obj.fluffyGDPValue != null) {
-                jsonGenerator.writeObject(obj.fluffyGDPValue);
+            if (obj.purpleGDPValue != null) {
+                jsonGenerator.writeObject(obj.purpleGDPValue);
                 return;
             }
-            if (obj.purpleGDPArrayValue != null) {
-                jsonGenerator.writeObject(obj.purpleGDPArrayValue);
+            if (obj.gdpElementArrayValue != null) {
+                jsonGenerator.writeObject(obj.gdpElementArrayValue);
                 return;
             }
             throw new IOException("Gdp must not be null");

@@ -1,5 +1,5 @@
 // To parse this JSON:
-//
+// 
 //   NSError *error;
 //   GDGdp *gdp = GDGdpFromJSON(json, NSUTF8Encoding, &error);
 
