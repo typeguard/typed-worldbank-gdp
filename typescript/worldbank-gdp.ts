@@ -10,8 +10,8 @@
 export interface GDPElement {
     indicator: Country;
     country:   Country;
-    value?:    string;
-    decimal:   Decimal;
+    value:     string;
+    decimal:   string;
     date:      string;
 }
 
@@ -32,11 +32,7 @@ export enum Value {
     UnitedStates = "United States",
 }
 
-export enum Decimal {
-    The0 = "0",
-}
-
-export interface Gdp1 {
+export interface PurpleGDP {
     page:     number;
     pages:    number;
     per_page: string;
@@ -45,110 +41,149 @@ export interface Gdp1 {
 
 // Converts JSON strings to/from your types
 // and asserts the results of JSON.parse at runtime
-export module Convert {
-    export function toGdp(json: string): Array<GDPElement[] | Gdp1> {
-        return cast(JSON.parse(json), a(u(a(o("GDPElement")), o("Gdp1"))));
+export namespace Convert {
+    export function toGdp(json: string): Array<GDPElement[] | PurpleGDP> {
+        return cast(JSON.parse(json), a(u(a(r("GDPElement")), r("PurpleGDP"))));
     }
 
-    export function gdpToJson(value: Array<GDPElement[] | Gdp1>): string {
-        return JSON.stringify(value, null, 2);
+    export function gdpToJson(value: Array<GDPElement[] | PurpleGDP>): string {
+        return JSON.stringify(uncast(value, a(u(a(r("GDPElement")), r("PurpleGDP")))), null, 2);
     }
-    
-    function cast<T>(obj: any, typ: any): T {
-        if (!isValid(typ, obj)) {
-            throw `Invalid value`;
+
+    function invalidValue(typ: any, val: any): never {
+        throw Error(`Invalid value ${JSON.stringify(val)} for type ${JSON.stringify(typ)}`);
+    }
+
+    function jsonToJSProps(typ: any): any {
+        if (typ.jsonToJS === undefined) {
+            var map: any = {};
+            typ.props.forEach((p: any) => map[p.json] = { key: p.js, typ: p.typ });
+            typ.jsonToJS = map;
         }
-        return obj;
+        return typ.jsonToJS;
     }
 
-    function isValid(typ: any, val: any): boolean {
-        if (typ === undefined) return true;
-        if (typ === null) return val === null || val === undefined;
-        return typ.isUnion  ? isValidUnion(typ.typs, val)
-                : typ.isArray  ? isValidArray(typ.typ, val)
-                : typ.isMap    ? isValidMap(typ.typ, val)
-                : typ.isEnum   ? isValidEnum(typ.name, val)
-                : typ.isObject ? isValidObject(typ.cls, val)
-                :                isValidPrimitive(typ, val);
+    function jsToJSONProps(typ: any): any {
+        if (typ.jsToJSON === undefined) {
+            var map: any = {};
+            typ.props.forEach((p: any) => map[p.js] = { key: p.json, typ: p.typ });
+            typ.jsToJSON = map;
+        }
+        return typ.jsToJSON;
     }
 
-    function isValidPrimitive(typ: string, val: any) {
-        return typeof typ === typeof val;
+    function transform(val: any, typ: any, getProps: any): any {
+        function transformPrimitive(typ: string, val: any): any {
+            if (typeof typ === typeof val) return val;
+            return invalidValue(typ, val);
+        }
+
+        function transformUnion(typs: any[], val: any): any {
+            // val must validate against one typ in typs
+            var l = typs.length;
+            for (var i = 0; i < l; i++) {
+                var typ = typs[i];
+                try {
+                    return transform(val, typ, getProps);
+                } catch (_) {}
+            }
+            return invalidValue(typs, val);
+        }
+
+        function transformEnum(cases: string[], val: any): any {
+            if (cases.indexOf(val) !== -1) return val;
+            return invalidValue(cases, val);
+        }
+
+        function transformArray(typ: any, val: any): any {
+            // val must be an array with no invalid elements
+            if (!Array.isArray(val)) return invalidValue("array", val);
+            return val.map(el => transform(el, typ, getProps));
+        }
+
+        function transformObject(props: { [k: string]: any }, additional: any, val: any): any {
+            if (val === null || typeof val !== "object" || Array.isArray(val)) {
+                return invalidValue("object", val);
+            }
+            var result: any = {};
+            Object.getOwnPropertyNames(props).forEach(key => {
+                const prop = props[key];
+                const v = Object.prototype.hasOwnProperty.call(val, key) ? val[key] : undefined;
+                result[prop.key] = transform(v, prop.typ, getProps);
+            });
+            Object.getOwnPropertyNames(val).forEach(key => {
+                if (!Object.prototype.hasOwnProperty.call(props, key)) {
+                    result[key] = transform(val[key], additional, getProps);
+                }
+            });
+            return result;
+        }
+
+        if (typ === "any") return val;
+        if (typ === null) {
+            if (val === null) return val;
+            return invalidValue(typ, val);
+        }
+        if (typ === false) return invalidValue(typ, val);
+        while (typeof typ === "object" && typ.ref !== undefined) {
+            typ = typeMap[typ.ref];
+        }
+        if (Array.isArray(typ)) return transformEnum(typ, val);
+        if (typeof typ === "object") {
+            return typ.hasOwnProperty("unionMembers") ? transformUnion(typ.unionMembers, val)
+                : typ.hasOwnProperty("arrayItems")    ? transformArray(typ.arrayItems, val)
+                : typ.hasOwnProperty("props")         ? transformObject(getProps(typ), typ.additional, val)
+                : invalidValue(typ, val);
+        }
+        return transformPrimitive(typ, val);
     }
 
-    function isValidUnion(typs: any[], val: any): boolean {
-        // val must validate against one typ in typs
-        return typs.find(typ => isValid(typ, val)) !== undefined;
+    function cast<T>(val: any, typ: any): T {
+        return transform(val, typ, jsonToJSProps);
     }
 
-    function isValidEnum(enumName: string, val: any): boolean {
-        const cases = typeMap[enumName];
-        return cases.indexOf(val) !== -1;
-    }
-
-    function isValidArray(typ: any, val: any): boolean {
-        // val must be an array with no invalid elements
-        return Array.isArray(val) && val.every(element => {
-            return isValid(typ, element);
-        });
-    }
-
-    function isValidMap(typ: any, val: any): boolean {
-        if (val === null || typeof val !== "object" || Array.isArray(val)) return false;
-        // all values in the map must be typ
-        return Object.keys(val).every(prop => {
-            if (!Object.prototype.hasOwnProperty.call(val, prop)) return true;
-            return isValid(typ, val[prop]);
-        });
-    }
-
-    function isValidObject(className: string, val: any): boolean {
-        if (val === null || typeof val !== "object" || Array.isArray(val)) return false;
-        let typeRep = typeMap[className];
-        return Object.keys(typeRep).every(prop => {
-            if (!Object.prototype.hasOwnProperty.call(typeRep, prop)) return true;
-            return isValid(typeRep[prop], val[prop]);
-        });
+    function uncast<T>(val: T, typ: any): any {
+        return transform(val, typ, jsToJSONProps);
     }
 
     function a(typ: any) {
-        return { typ, isArray: true };
-    }
-
-    function e(name: string) {
-        return { name, isEnum: true };
+        return { arrayItems: typ };
     }
 
     function u(...typs: any[]) {
-        return { typs, isUnion: true };
+        return { unionMembers: typs };
     }
 
-    function m(typ: any) {
-        return { typ, isMap: true };
+    function o(props: any[], additional: any) {
+        return { props, additional };
     }
 
-    function o(className: string) {
-        return { cls: className, isObject: true };
+    function m(additional: any) {
+        return { props: [], additional };
+    }
+
+    function r(name: string) {
+        return { ref: name };
     }
 
     const typeMap: any = {
-        "GDPElement": {
-            indicator: o("Country"),
-            country: o("Country"),
-            value: u(null, ""),
-            decimal: e("Decimal"),
-            date: "",
-        },
-        "Country": {
-            id: e("ID"),
-            value: e("Value"),
-        },
-        "Gdp1": {
-            page: 0,
-            pages: 0,
-            per_page: "",
-            total: 0,
-        },
+        "GDPElement": o([
+            { json: "indicator", js: "indicator", typ: r("Country") },
+            { json: "country", js: "country", typ: r("Country") },
+            { json: "value", js: "value", typ: "" },
+            { json: "decimal", js: "decimal", typ: "" },
+            { json: "date", js: "date", typ: "" },
+        ], false),
+        "Country": o([
+            { json: "id", js: "id", typ: r("ID") },
+            { json: "value", js: "value", typ: r("Value") },
+        ], false),
+        "PurpleGDP": o([
+            { json: "page", js: "page", typ: 0 },
+            { json: "pages", js: "pages", typ: 0 },
+            { json: "per_page", js: "per_page", typ: "" },
+            { json: "total", js: "total", typ: 0 },
+        ], false),
         "ID": [
             "CN",
             "NY.GDP.MKTP.CD",
@@ -158,9 +193,6 @@ export module Convert {
             "China",
             "GDP (current US$)",
             "United States",
-        ],
-        "Decimal": [
-            "0",
         ],
     };
 }

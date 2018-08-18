@@ -1,50 +1,11 @@
 {
+    "$schema": "http://json-schema.org/draft-06/schema#",
     "type": "array",
     "items": {
-        "oneOf": [
-            {
-                "type": "array",
-                "items": {
-                    "$ref": "#/definitions/GDPElement"
-                }
-            },
-            {
-                "$ref": "#/definitions/PurpleGDP"
-            }
-        ],
-        "title": "GDP"
+        "$ref": "#/definitions/GDPUnion"
     },
     "definitions": {
-        "Country": {
-            "type": "object",
-            "additionalProperties": false,
-            "properties": {
-                "id": {
-                    "type": "string",
-                    "enum": [
-                        "CN",
-                        "US",
-                        "NY.GDP.MKTP.CD"
-                    ],
-                    "title": "id"
-                },
-                "value": {
-                    "type": "string",
-                    "enum": [
-                        "China",
-                        "United States",
-                        "GDP (current US$)"
-                    ],
-                    "title": "value"
-                }
-            },
-            "required": [
-                "id",
-                "value"
-            ],
-            "title": "country"
-        },
-        "GDPElement": {
+        "PurpleGDP": {
             "type": "object",
             "additionalProperties": false,
             "properties": {
@@ -55,25 +16,15 @@
                     "$ref": "#/definitions/Country"
                 },
                 "value": {
-                    "oneOf": [
-                        {
-                            "type": "null"
-                        },
-                        {
-                            "type": "string"
-                        }
-                    ],
-                    "title": "value"
+                    "type": "string"
                 },
                 "decimal": {
                     "type": "string",
-                    "enum": [
-                        "0"
-                    ],
-                    "title": "decimal"
+                    "format": "integer"
                 },
                 "date": {
-                    "type": "string"
+                    "type": "string",
+                    "format": "integer"
                 }
             },
             "required": [
@@ -83,9 +34,9 @@
                 "indicator",
                 "value"
             ],
-            "title": "GDP"
+            "title": "PurpleGDP"
         },
-        "PurpleGDP": {
+        "FluffyGDP": {
             "type": "object",
             "additionalProperties": false,
             "properties": {
@@ -96,7 +47,8 @@
                     "type": "integer"
                 },
                 "per_page": {
-                    "type": "string"
+                    "type": "string",
+                    "format": "integer"
                 },
                 "total": {
                     "type": "integer"
@@ -108,7 +60,56 @@
                 "per_page",
                 "total"
             ],
-            "title": "GDP"
+            "title": "FluffyGDP"
+        },
+        "Country": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "id": {
+                    "$ref": "#/definitions/ID"
+                },
+                "value": {
+                    "$ref": "#/definitions/Value"
+                }
+            },
+            "required": [
+                "id",
+                "value"
+            ],
+            "title": "Country"
+        },
+        "GDPUnion": {
+            "anyOf": [
+                {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/PurpleGDP"
+                    }
+                },
+                {
+                    "$ref": "#/definitions/FluffyGDP"
+                }
+            ],
+            "title": "GDPUnion"
+        },
+        "ID": {
+            "type": "string",
+            "enum": [
+                "CN",
+                "US",
+                "NY.GDP.MKTP.CD"
+            ],
+            "title": "ID"
+        },
+        "Value": {
+            "type": "string",
+            "enum": [
+                "China",
+                "United States",
+                "GDP (current US$)"
+            ],
+            "title": "Value"
         }
     }
 }

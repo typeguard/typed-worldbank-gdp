@@ -3,12 +3,12 @@
 // #[macro_use]
 // extern crate serde_derive;
 // extern crate serde_json;
-// 
-// use generated_module::GDP;
-// 
+//
+// use generated_module::[object Object];
+//
 // fn main() {
 //     let json = r#"{"answer": 42}"#;
-//     let model: GDP = serde_json::from_str(&json).unwrap();
+//     let model: [object Object] = serde_json::from_str(&json).unwrap();
 // }
 
 extern crate serde_json;
@@ -24,10 +24,10 @@ pub struct PurpleGdp {
     country: Country,
 
     #[serde(rename = "value")]
-    value: Option<String>,
+    value: String,
 
     #[serde(rename = "decimal")]
-    decimal: Decimal,
+    decimal: String,
 
     #[serde(rename = "date")]
     date: String,
@@ -87,10 +87,4 @@ pub enum Value {
 
     #[serde(rename = "United States")]
     UnitedStates,
-}
-
-#[derive(Serialize, Deserialize)]
-pub enum Decimal {
-    #[serde(rename = "0")]
-    The0,
 }

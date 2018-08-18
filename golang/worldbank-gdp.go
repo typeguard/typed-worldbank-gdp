@@ -24,8 +24,8 @@ func (r *Gdp) Marshal() ([]byte, error) {
 type PurpleGDP struct {
 	Indicator Country `json:"indicator"`
 	Country   Country `json:"country"`  
-	Value     *string `json:"value"`    
-	Decimal   Decimal `json:"decimal"`  
+	Value     string  `json:"value"`    
+	Decimal   string  `json:"decimal"`  
 	Date      string  `json:"date"`     
 }
 
@@ -53,11 +53,6 @@ const (
 	China Value = "China"
 	GDPCurrentUS Value = "GDP (current US$)"
 	UnitedStates Value = "United States"
-)
-
-type Decimal string
-const (
-	The0 Decimal = "0"
 )
 
 type GDPUnion struct {

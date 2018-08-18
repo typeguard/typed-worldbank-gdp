@@ -12,12 +12,12 @@ enum GDPUnion: Codable {
 
     init(from decoder: Decoder) throws {
         let container = try decoder.singleValueContainer()
-        if let x = try? container.decode(FluffyGDP.self) {
-            self = .fluffyGDP(x)
-            return
-        }
         if let x = try? container.decode([PurpleGDP].self) {
             self = .purpleGDPArray(x)
+            return
+        }
+        if let x = try? container.decode(FluffyGDP.self) {
+            self = .fluffyGDP(x)
             return
         }
         throw DecodingError.typeMismatch(GDPUnion.self, DecodingError.Context(codingPath: decoder.codingPath, debugDescription: "Wrong type for GDPUnion"))
@@ -36,9 +36,7 @@ enum GDPUnion: Codable {
 
 struct PurpleGDP: Codable {
     let indicator, country: Country
-    let value: String?
-    let decimal: Decimal
-    let date: String
+    let value, decimal, date: String
 }
 
 struct Country: Codable {
@@ -58,10 +56,6 @@ enum Value: String, Codable {
     case unitedStates = "United States"
 }
 
-enum Decimal: String, Codable {
-    case the0 = "0"
-}
-
 struct FluffyGDP: Codable {
     let page, pages: Int
     let perPage: String
@@ -74,11 +68,11 @@ struct FluffyGDP: Codable {
     }
 }
 
-// MARK: Convenience initializers
+// MARK: Convenience initializers and mutators
 
 extension PurpleGDP {
     init(data: Data) throws {
-        self = try JSONDecoder().decode(PurpleGDP.self, from: data)
+        self = try newJSONDecoder().decode(PurpleGDP.self, from: data)
     }
 
     init(_ json: String, using encoding: String.Encoding = .utf8) throws {
@@ -92,8 +86,24 @@ extension PurpleGDP {
         try self.init(data: try Data(contentsOf: url))
     }
 
+    func with(
+        indicator: Country? = nil,
+        country: Country? = nil,
+        value: String? = nil,
+        decimal: String? = nil,
+        date: String? = nil
+    ) -> PurpleGDP {
+        return PurpleGDP(
+            indicator: indicator ?? self.indicator,
+            country: country ?? self.country,
+            value: value ?? self.value,
+            decimal: decimal ?? self.decimal,
+            date: date ?? self.date
+        )
+    }
+
     func jsonData() throws -> Data {
-        return try JSONEncoder().encode(self)
+        return try newJSONEncoder().encode(self)
     }
 
     func jsonString(encoding: String.Encoding = .utf8) throws -> String? {
@@ -103,7 +113,7 @@ extension PurpleGDP {
 
 extension Country {
     init(data: Data) throws {
-        self = try JSONDecoder().decode(Country.self, from: data)
+        self = try newJSONDecoder().decode(Country.self, from: data)
     }
 
     init(_ json: String, using encoding: String.Encoding = .utf8) throws {
@@ -117,8 +127,18 @@ extension Country {
         try self.init(data: try Data(contentsOf: url))
     }
 
+    func with(
+        id: ID? = nil,
+        value: Value? = nil
+    ) -> Country {
+        return Country(
+            id: id ?? self.id,
+            value: value ?? self.value
+        )
+    }
+
     func jsonData() throws -> Data {
-        return try JSONEncoder().encode(self)
+        return try newJSONEncoder().encode(self)
     }
 
     func jsonString(encoding: String.Encoding = .utf8) throws -> String? {
@@ -128,7 +148,7 @@ extension Country {
 
 extension FluffyGDP {
     init(data: Data) throws {
-        self = try JSONDecoder().decode(FluffyGDP.self, from: data)
+        self = try newJSONDecoder().decode(FluffyGDP.self, from: data)
     }
 
     init(_ json: String, using encoding: String.Encoding = .utf8) throws {
@@ -142,8 +162,22 @@ extension FluffyGDP {
         try self.init(data: try Data(contentsOf: url))
     }
 
+    func with(
+        page: Int? = nil,
+        pages: Int? = nil,
+        perPage: String? = nil,
+        total: Int? = nil
+    ) -> FluffyGDP {
+        return FluffyGDP(
+            page: page ?? self.page,
+            pages: pages ?? self.pages,
+            perPage: perPage ?? self.perPage,
+            total: total ?? self.total
+        )
+    }
+
     func jsonData() throws -> Data {
-        return try JSONEncoder().encode(self)
+        return try newJSONEncoder().encode(self)
     }
 
     func jsonString(encoding: String.Encoding = .utf8) throws -> String? {
@@ -153,7 +187,7 @@ extension FluffyGDP {
 
 extension Array where Element == Gdp.Element {
     init(data: Data) throws {
-        self = try JSONDecoder().decode(Gdp.self, from: data)
+        self = try newJSONDecoder().decode(Gdp.self, from: data)
     }
 
     init(_ json: String, using encoding: String.Encoding = .utf8) throws {
@@ -168,10 +202,26 @@ extension Array where Element == Gdp.Element {
     }
 
     func jsonData() throws -> Data {
-        return try JSONEncoder().encode(self)
+        return try newJSONEncoder().encode(self)
     }
 
     func jsonString(encoding: String.Encoding = .utf8) throws -> String? {
         return String(data: try self.jsonData(), encoding: encoding)
     }
+}
+
+func newJSONDecoder() -> JSONDecoder {
+    let decoder = JSONDecoder()
+    if #available(iOS 10.0, OSX 10.12, tvOS 10.0, watchOS 3.0, *) {
+        decoder.dateDecodingStrategy = .iso8601
+    }
+    return decoder
+}
+
+func newJSONEncoder() -> JSONEncoder {
+    let encoder = JSONEncoder()
+    if #available(iOS 10.0, OSX 10.12, tvOS 10.0, watchOS 3.0, *) {
+        encoder.dateEncodingStrategy = .iso8601
+    }
+    return encoder
 }

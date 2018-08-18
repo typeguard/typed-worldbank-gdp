@@ -7,7 +7,7 @@ public class GDPElement {
     private Country indicator;
     private Country country;
     private String value;
-    private Decimal decimal;
+    private String decimal;
     private String date;
 
     @JsonProperty("indicator")
@@ -26,9 +26,9 @@ public class GDPElement {
     public void setValue(String value) { this.value = value; }
 
     @JsonProperty("decimal")
-    public Decimal getDecimal() { return decimal; }
+    public String getDecimal() { return decimal; }
     @JsonProperty("decimal")
-    public void setDecimal(Decimal value) { this.decimal = value; }
+    public void setDecimal(String value) { this.decimal = value; }
 
     @JsonProperty("date")
     public String getDate() { return date; }

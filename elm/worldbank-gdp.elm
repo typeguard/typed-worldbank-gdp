@@ -1,9 +1,9 @@
 -- To decode the JSON data, add this file to your project, run
--- 
+--
 --     elm-package install NoRedInk/elm-decode-pipeline
--- 
+--
 -- add these imports
--- 
+--
 --     import Json.Decode exposing (decodeString)`);
 --     import QuickType exposing (gdp)
 --
@@ -20,7 +20,6 @@ module QuickType exposing
     , FluffyGDP
     , ID(..)
     , Value(..)
-    , Decimal(..)
     , GDPUnion(..)
     )
 
@@ -39,8 +38,8 @@ type GDPUnion
 type alias PurpleGDP =
     { indicator : Country
     , country : Country
-    , value : Maybe String
-    , decimal : Decimal
+    , value : String
+    , decimal : String
     , date : String
     }
 
@@ -58,9 +57,6 @@ type Value
     = China
     | GDPCurrentUS
     | UnitedStates
-
-type Decimal
-    = The0
 
 type alias FluffyGDP =
     { page : Int
@@ -94,8 +90,8 @@ purpleGDP =
     Jpipe.decode PurpleGDP
         |> Jpipe.required "indicator" country
         |> Jpipe.required "country" country
-        |> Jpipe.optional "value" (Jdec.nullable Jdec.string) Nothing
-        |> Jpipe.required "decimal" decimal
+        |> Jpipe.required "value" Jdec.string
+        |> Jpipe.required "decimal" Jdec.string
         |> Jpipe.required "date" Jdec.string
 
 encodePurpleGDP : PurpleGDP -> Jenc.Value
@@ -103,8 +99,8 @@ encodePurpleGDP x =
     Jenc.object
         [ ("indicator", encodeCountry x.indicator)
         , ("country", encodeCountry x.country)
-        , ("value", makeNullableEncoder Jenc.string x.value)
-        , ("decimal", encodeDecimal x.decimal)
+        , ("value", Jenc.string x.value)
+        , ("decimal", Jenc.string x.decimal)
         , ("date", Jenc.string x.date)
         ]
 
@@ -154,19 +150,6 @@ encodeValue x = case x of
     China -> Jenc.string "China"
     GDPCurrentUS -> Jenc.string "GDP (current US$)"
     UnitedStates -> Jenc.string "United States"
-
-decimal : Jdec.Decoder Decimal
-decimal =
-    Jdec.string
-        |> Jdec.andThen (\str ->
-            case str of
-                "0" -> Jdec.succeed The0
-                somethingElse -> Jdec.fail <| "Invalid Decimal: " ++ somethingElse
-        )
-
-encodeDecimal : Decimal -> Jenc.Value
-encodeDecimal x = case x of
-    The0 -> Jenc.string "0"
 
 fluffyGDP : Jdec.Decoder FluffyGDP
 fluffyGDP =
